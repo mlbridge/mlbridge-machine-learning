@@ -1,4 +1,4 @@
-# DNS Alert Model
+# MLBridge - Machine Learning
 
 This directory contains the the code for the training and evaluation of a binary 
 classifier for alerting whether a person is querying a malicious domain.
