@@ -122,7 +122,11 @@ def training(es, model, model_name, epochs, train_set, labels_train_set,
                                  }
                             }
                        }
-        es.update(index='model', id=1, body=update_body)
+        try:
+            es.update(index='model', id=1, body=update_body)
+        except:
+            print('Please check the Elasticsearch Server')
+
     print('Training Completed')
 
 
@@ -180,10 +184,13 @@ def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
                         }
                    }
 
-    es.update(index='model', id=1, body=update_body)
+    try:
+        es.update(index='model', id=1, body=update_body)
+    except:
+        print('Please check the Elasticsearch Server')
 
 
-if '__main__' == '__name__':
+if '__name__' == '__main__':
     es = Elasticsearch()
     if 'model' not in es.indices.get('*'):
         body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
