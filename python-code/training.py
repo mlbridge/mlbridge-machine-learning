@@ -100,7 +100,7 @@ def model_definition():
     return model
 
 
-def training(es, model, save_path, epochs, train_set, labels_train_set,
+def training(es, model, model_name, epochs, train_set, labels_train_set,
              validation_set, labels_validation_set):
     for i in range(epochs):
         history = model.fit(train_set, labels_train_set, epochs=1,
@@ -115,11 +115,11 @@ def training(es, model, save_path, epochs, train_set, labels_train_set,
 
         update_body = {'doc':
                            {'training':
-                                   {'loss': body['model']['training']['loss'],
-                                    'val_loss': body['model']['training']['val_loss'],
-                                    'acc': body['model']['training']['acc'],
-                                    'val_acc': body['model']['training']['val_acc']
-                                    }
+                                {'loss': body['model']['training']['loss'],
+                                 'val_loss': body['model']['training']['val_loss'],
+                                 'acc': body['model']['training']['acc'],
+                                 'val_acc': body['model']['training']['val_acc']
+                                 }
                             }
                        }
         es.update(index='model', id=1, body=update_body)
@@ -165,7 +165,22 @@ def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
                                          cf_matrix_test[1, 0])
     f1_test = 2 * rec_test * pres_test / (rec_test + pres_test)
 
-    es.get
+    update_body = {'doc':
+                       {'metrics':
+                            {'loss_train': loss_train, 'acc_train': acc_train,
+                             'loss_valid': loss_valid, 'acc_valid': acc_valid,
+                             'loss_test': loss_test, 'acc_test': acc_test,
+                             'cf_matrix_train': cf_matrix_train, 'cf_matrix_valid': cf_matrix_valid,
+                             'cf_matrix_test': cf_matrix_test,
+                             'pres_train': pres_train, 'rec_train': rec_train, 'f1_train': f1_train,
+                             'pres_valid': pres_valid, 'rec_valid': rec_valid, 'f1_valid': f1_valid,
+                             'pres_test': pres_test, 'rec_test': rec_test, 'f1_test': f1_test
+
+                             }
+                        }
+                   }
+
+    es.update(index='model', id=1, body=update_body)
 
 
 if '__main__' == '__name__':
@@ -175,9 +190,8 @@ if '__main__' == '__name__':
                              'val_acc': []},
                 'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
                             'acc_valid': 0, 'loss_test': 0, 'acc_test': 0,
-                            'cf_matrix_train': 0, 'cf_matrix_valid': 0,
-                            'cf_matrix_test': 0, 'pres_train': 0, 'rec_train': 0,
-                            'f1_train': 0, 'pres_valid': 0, 'rec_valid': 0,
-                            'f1_valid': 0, 'pres_test': 0, 'rec_test': 0,
-                            'f1_test': 0}}
+                            'cf_matrix_train': 0, 'cf_matrix_valid': 0, 'cf_matrix_test': 0,
+                            'pres_train': 0, 'rec_train': 0, 'f1_train': 0,
+                            'pres_valid': 0, 'rec_valid': 0, 'f1_valid': 0,
+                            'pres_test': 0, 'rec_test': 0, 'f1_test': 0}}
         es.index(index='model', id=1, body=body)
