@@ -100,7 +100,7 @@ def model_definition():
     return model
 
 
-def training(es, model, model_path, epochs, train_set, labels_train_set,
+def training(es, model, save_path, epochs, train_set, labels_train_set,
              validation_set, labels_validation_set):
     for i in range(epochs):
         history = model.fit(train_set, labels_train_set, epochs=1,
@@ -164,6 +164,8 @@ def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
     rec_test = (cf_matrix_test[1, 1]) / (cf_matrix_test[1, 1] +
                                          cf_matrix_test[1, 0])
     f1_test = 2 * rec_test * pres_test / (rec_test + pres_test)
+
+    es.get
 
 
 if '__main__' == '__name__':
