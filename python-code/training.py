@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers
 from sklearn.metrics import confusion_matrix
+from elasticsearch import Elasticsearch
 import csv
 
 print("Version:", tf.__version__)
@@ -14,7 +15,8 @@ def string_to_ascii(string):
     return ascii_arr
 
 
-def import_data(data_path, labels, header, lateral_skip, no_of_entries, csv_txt):
+def import_data(string_to_ascii, data_path, labels, header, lateral_skip,
+                no_of_entries, csv_txt):
     if csv_txt == 0:
         data = open(data_path, "r")
         data = list(data.readlines())
@@ -27,14 +29,16 @@ def import_data(data_path, labels, header, lateral_skip, no_of_entries, csv_txt)
     ret_data = np.zeros((no_of_entries, 256))
 
     for i in range(header, no_of_entries + header):
-        ret_data[i - header, 0: len(data[i].strip('\"'))] = string_to_ascii(data[i].strip('\"'))
+        ret_data[i - header, 0: len(data[i].strip('\"'))] = \
+            string_to_ascii(data[i].strip('\"'))
 
     labels = np.ones((no_of_entries, 1)) * labels
 
     return ret_data, labels
 
 
-def data_preprocessing(number_of_samples, mal_data_address, benign_data_address):
+def data_preprocessing(import_data, number_of_samples,
+                       mal_data_address, benign_data_address):
     ret_data_mal, labels_mal = \
         import_data(mal_data_address, 1, 1, 0, int(number_of_samples / 2), 0)
     ret_data_nmal, labels_nmal = \
@@ -96,21 +100,34 @@ def model_definition():
     return model
 
 
-def training(model, model_name, train_set, labels_train_set, validation_set,
-             labels_validation_set):
-    save_callback = tf.keras.callbacks.ModelCheckpoint(model_name,
-                                                       save_best_only=True,
-                                                       monitor='val_loss',
-                                                       mode='min')
-    history = model.fit(train_set, labels_train_set, epochs=30,
-                        validation_data=(validation_set, labels_validation_set),
-                        callbacks=[save_callback])
-    return history
+def training(es, model, model_path, epochs, train_set, labels_train_set,
+             validation_set, labels_validation_set):
+    for i in range(epochs):
+        history = model.fit(train_set, labels_train_set, epochs=1,
+                            validation_data=(validation_set,
+                                             labels_validation_set))
+
+        body = es.get(index='model', id=1)['_source']
+        body['model']['training']['loss'].append(history.history['loss'][0])
+        body['model']['training']['val_loss'].append(history.history['val_loss'][0])
+        body['model']['training']['acc'].append(history.history['acc'][0])
+        body['model']['training']['val_acc'].append(history.history['val_acc'][0])
+
+        update_body = {'doc':
+                           {'training':
+                                   {'loss': body['model']['training']['loss'],
+                                    'val_loss': body['model']['training']['val_loss'],
+                                    'acc': body['model']['training']['acc'],
+                                    'val_acc': body['model']['training']['val_acc']
+                                    }
+                            }
+                       }
+        es.update(index='model', id=1, body=update_body)
+    print('Training Completed')
 
 
-def model_evaluation_metrics(model, train_set, labels_train_set, valid_set,
+def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
                              labels_valid_set, test_set, labels_test_set):
-
     loss_train, acc_train = model.evaluate(train_set, labels_train_set)
     loss_valid, acc_valid = model.evaluate(valid_set, labels_valid_set)
     loss_test, acc_test = model.evaluate(test_set, labels_test_set)
@@ -147,3 +164,18 @@ def model_evaluation_metrics(model, train_set, labels_train_set, valid_set,
     rec_test = (cf_matrix_test[1, 1]) / (cf_matrix_test[1, 1] +
                                          cf_matrix_test[1, 0])
     f1_test = 2 * rec_test * pres_test / (rec_test + pres_test)
+
+
+if '__main__' == '__name__':
+    es = Elasticsearch()
+    if 'model' not in es.indices.get('*'):
+        body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
+                             'val_acc': []},
+                'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
+                            'acc_valid': 0, 'loss_test': 0, 'acc_test': 0,
+                            'cf_matrix_train': 0, 'cf_matrix_valid': 0,
+                            'cf_matrix_test': 0, 'pres_train': 0, 'rec_train': 0,
+                            'f1_train': 0, 'pres_valid': 0, 'rec_valid': 0,
+                            'f1_valid': 0, 'pres_test': 0, 'rec_test': 0,
+                            'f1_test': 0}}
+        es.index(index='model', id=1, body=body)
