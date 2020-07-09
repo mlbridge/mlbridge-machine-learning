@@ -5,8 +5,6 @@ from sklearn.metrics import confusion_matrix
 from elasticsearch import Elasticsearch
 import csv
 
-print("Version:", tf.__version__)
-
 
 def string_to_ascii(string):
     ascii_arr = np.zeros(len(string))
@@ -40,9 +38,11 @@ def import_data(string_to_ascii, data_path, labels, header, lateral_skip,
 def data_preprocessing(import_data, number_of_samples,
                        mal_data_address, benign_data_address):
     ret_data_mal, labels_mal = \
-        import_data(mal_data_address, 1, 1, 0, int(number_of_samples / 2), 0)
+        import_data(string_to_ascii, mal_data_address, 1, 1, 0,
+                    int(number_of_samples / 2), 0)
     ret_data_nmal, labels_nmal = \
-        import_data(benign_data_address, 0, 1, 1, int(number_of_samples / 2), 1)
+        import_data(string_to_ascii, benign_data_address, 0, 1, 1,
+                    int(number_of_samples / 2), 1)
 
     train_split = int(number_of_samples / 2 * 0.8)
     valid_split = int(number_of_samples / 2 * 0.9)
@@ -82,6 +82,9 @@ def data_preprocessing(import_data, number_of_samples,
     print('Validation Shape:', np.shape(valid_set), np.shape(labels_valid_set))
     print('Test Shape:', np.shape(test_set), np.shape(labels_test_set))
 
+    return train_set, labels_train_set, valid_set, labels_valid_set, test_set, \
+           labels_test_set
+
 
 def model_definition():
     model = models.Sequential(name='DNS_Alert_Net')
@@ -107,27 +110,28 @@ def training(es, model, model_name, epochs, train_set, labels_train_set,
                             validation_data=(validation_set,
                                              labels_validation_set))
 
-        body = es.get(index='model', id=1)['_source']
-        body['model']['training']['loss'].append(history.history['loss'][0])
-        body['model']['training']['val_loss'].append(history.history['val_loss'][0])
-        body['model']['training']['acc'].append(history.history['acc'][0])
-        body['model']['training']['val_acc'].append(history.history['val_acc'][0])
-
-        update_body = {'doc':
-                           {'training':
-                                {'loss': body['model']['training']['loss'],
-                                 'val_loss': body['model']['training']['val_loss'],
-                                 'acc': body['model']['training']['acc'],
-                                 'val_acc': body['model']['training']['val_acc']
-                                 }
-                            }
-                       }
         try:
+            body = es.get(index='model', id=1)['_source']
+            body['model']['training']['loss'].append(history.history['loss'][0])
+            body['model']['training']['val_loss'].append(history.history['val_loss'][0])
+            body['model']['training']['acc'].append(history.history['acc'][0])
+            body['model']['training']['val_acc'].append(history.history['val_acc'][0])
+
+            update_body = {'doc':
+                               {'training':
+                                    {'loss': body['model']['training']['loss'],
+                                     'val_loss': body['model']['training']['val_loss'],
+                                     'acc': body['model']['training']['acc'],
+                                     'val_acc': body['model']['training']['val_acc']
+                                     }
+                                }
+                           }
             es.update(index='model', id=1, body=update_body)
         except:
             print('Please check the Elasticsearch Server')
 
     print('Training Completed')
+    return model
 
 
 def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
@@ -190,15 +194,30 @@ def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
         print('Please check the Elasticsearch Server')
 
 
-if '__name__' == '__main__':
-    es = Elasticsearch()
-    if 'model' not in es.indices.get('*'):
-        body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
-                             'val_acc': []},
-                'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
-                            'acc_valid': 0, 'loss_test': 0, 'acc_test': 0,
-                            'cf_matrix_train': 0, 'cf_matrix_valid': 0, 'cf_matrix_test': 0,
-                            'pres_train': 0, 'rec_train': 0, 'f1_train': 0,
-                            'pres_valid': 0, 'rec_valid': 0, 'f1_valid': 0,
-                            'pres_test': 0, 'rec_test': 0, 'f1_test': 0}}
-        es.index(index='model', id=1, body=body)
+if __name__ == '__main__':
+    try:
+        es = Elasticsearch()
+        if 'model' not in es.indices.get('*'):
+            body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
+                                 'val_acc': []},
+                    'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
+                                'acc_valid': 0, 'loss_test': 0, 'acc_test': 0,
+                                'cf_matrix_train': 0, 'cf_matrix_valid': 0, 'cf_matrix_test': 0,
+                                'pres_train': 0, 'rec_train': 0, 'f1_train': 0,
+                                'pres_valid': 0, 'rec_valid': 0, 'f1_valid': 0,
+                                'pres_test': 0, 'rec_test': 0, 'f1_test': 0}}
+            es.index(index='model', id=1, body=body)
+    except:
+        es = ''
+
+    mal_data_path = '../data/malicious_domains.txt'
+    benign_data_path = '../data/benign_domains.csv'
+
+    train_set, labels_train_set, valid_set, labels_valid_set, test_set, \
+    labels_test_set = data_preprocessing(import_data, 1000,
+                                         mal_data_path, benign_data_path)
+    model = model_definition()
+    trained_model = training(es, model, 'model_name', 20, train_set, labels_train_set,
+                             valid_set, labels_valid_set)
+    model_evaluation_metrics(es, trained_model, train_set, labels_train_set,
+                             valid_set, labels_valid_set, test_set, labels_test_set)
