@@ -117,6 +117,7 @@ def training(es, model, model_name, epochs, batch_size, train_set,
             body['training']['val_loss'].append(history.history['val_loss'][0])
             body['training']['acc'].append(history.history['acc'][0])
             body['training']['val_acc'].append(history.history['val_acc'][0])
+            body['training']['epochs'].append((i + 1))
 
             update_body = {'doc':
                                {'training':
@@ -209,7 +210,7 @@ if __name__ == '__main__':
         training = es.get(index='model', id=1)['_source']['training']
         if training:
             body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
-                                 'val_acc': []},
+                                 'val_acc': [], 'epochs': []},
                     'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
                                 'acc_valid': 0, 'loss_test': 0, 'acc_test': 0,
                                 'cf_matrix_train': 0, 'cf_matrix_valid': 0, 'cf_matrix_test': 0,
