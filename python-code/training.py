@@ -124,7 +124,8 @@ def training(es, model, model_name, epochs, batch_size, train_set,
                                     {'loss': body['training']['loss'],
                                      'val_loss': body['training']['val_loss'],
                                      'acc': body['training']['acc'],
-                                     'val_acc': body['training']['val_acc']
+                                     'val_acc': body['training']['val_acc'],
+                                     'epochs': body['training']['epochs']
                                      }
                                 }
                            }
