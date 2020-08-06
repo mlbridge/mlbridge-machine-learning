@@ -228,6 +228,8 @@ if __name__ == '__main__':
                                      train_set, labels_train_set, valid_set, labels_valid_set)
             model_evaluation_metrics(es, trained_model, train_set, labels_train_set,
                                      valid_set, labels_valid_set, test_set, labels_test_set)
+            name = es.get(index='model', id=1)['_source']['name']
+            model.save('../saved_models/' + name + '.hdf5')
 
             update_body = {'doc': {'completed': 1, 'training': 0}}
 
