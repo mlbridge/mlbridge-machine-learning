@@ -128,7 +128,8 @@ def training(es, model, model_name, epochs, batch_size, train_set,
                                      }
                                 }
                            }
-            es.update(index='model', id=1, body=update_body)
+            es.update(index=es.get(index='model', id=1)['_source']['name'],
+                      id=1, body=update_body)
         except:
             print('Please check the Elasticsearch Server')
 
@@ -191,7 +192,8 @@ def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
                    }
 
     try:
-        es.update(index='model', id=1, body=update_body)
+        es.update(index=es.get(index='model', id=1)['_source']['name'], id=1,
+                  body=update_body)
     except:
         print('Please check the Elasticsearch Server')
 
