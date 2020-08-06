@@ -228,5 +228,7 @@ if __name__ == '__main__':
                                      train_set, labels_train_set, valid_set, labels_valid_set)
             model_evaluation_metrics(es, trained_model, train_set, labels_train_set,
                                      valid_set, labels_valid_set, test_set, labels_test_set)
-            es.index(index='model', id=1, body={'name': '', 'training': 0, 'load': 0,
-                                                'batch': 0, 'epochs': 0, 'samples': 0})
+
+            update_body = {'doc': {'completed': 1, 'training': 0}}
+
+            es.update(index='model', id=1, body=update_body)
