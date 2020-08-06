@@ -121,10 +121,10 @@ def training(es, model, model_name, epochs, batch_size, train_set,
 
             update_body = {'doc':
                                {'training':
-                                    {'loss': body['model']['training']['loss'],
-                                     'val_loss': body['model']['training']['val_loss'],
-                                     'acc': body['model']['training']['acc'],
-                                     'val_acc': body['model']['training']['val_acc']
+                                    {'loss': body['training']['loss'],
+                                     'val_loss': body['training']['val_loss'],
+                                     'acc': body['training']['acc'],
+                                     'val_acc': body['training']['val_acc']
                                      }
                                 }
                            }
