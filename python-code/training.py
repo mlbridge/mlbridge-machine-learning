@@ -207,8 +207,8 @@ if __name__ == '__main__':
     labels_test_set = data_preprocessing(import_data, 1000,
                                          mal_data_path, benign_data_path)
     while True:
-        training = es.get(index='model', id=1)['_source']['training']
-        if training:
+        training_ = es.get(index='model', id=1)['_source']['training']
+        if training_:
             body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
                                  'val_acc': [], 'epochs': []},
                     'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
