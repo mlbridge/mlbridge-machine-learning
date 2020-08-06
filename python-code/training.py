@@ -103,19 +103,20 @@ def model_definition():
     return model
 
 
-def training(es, model, model_name, epochs, train_set, labels_train_set,
-             validation_set, labels_validation_set):
+def training(es, model, model_name, epochs, batch_size, train_set,
+             labels_train_set, validation_set, labels_validation_set):
     for i in range(epochs):
-        history = model.fit(train_set, labels_train_set, epochs=1,
-                            validation_data=(validation_set,
-                                             labels_validation_set))
+        history = model.fit(train_set, labels_train_set, batch_size=batch_size,
+                            epochs=1, validation_data=(validation_set,
+                                                       labels_validation_set))
 
         try:
-            body = es.get(index='model', id=1)['_source']
-            body['model']['training']['loss'].append(history.history['loss'][0])
-            body['model']['training']['val_loss'].append(history.history['val_loss'][0])
-            body['model']['training']['acc'].append(history.history['acc'][0])
-            body['model']['training']['val_acc'].append(history.history['val_acc'][0])
+            body = es.get(index=es.get(index='model', id=1)['_source']['name'],
+                          id=1)['_source']
+            body['training']['loss'].append(history.history['loss'][0])
+            body['training']['val_loss'].append(history.history['val_loss'][0])
+            body['training']['acc'].append(history.history['acc'][0])
+            body['training']['val_acc'].append(history.history['val_acc'][0])
 
             update_body = {'doc':
                                {'training':
@@ -195,9 +196,18 @@ def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
 
 
 if __name__ == '__main__':
-    try:
-        es = Elasticsearch()
-        if 'model' not in es.indices.get('*'):
+
+    es = Elasticsearch()
+
+    mal_data_path = '../data/malicious_domains.txt'
+    benign_data_path = '../data/benign_domains.csv'
+
+    train_set, labels_train_set, valid_set, labels_valid_set, test_set, \
+    labels_test_set = data_preprocessing(import_data, 1000,
+                                         mal_data_path, benign_data_path)
+    while True:
+        training = es.get(index='model', id=1)['_source']['training']
+        if training:
             body = {'training': {'loss': [], 'val_loss': [], 'acc': [],
                                  'val_acc': []},
                     'metrics': {'loss_train': 0, 'acc_train': 0, 'loss_valid': 0,
@@ -206,18 +216,13 @@ if __name__ == '__main__':
                                 'pres_train': 0, 'rec_train': 0, 'f1_train': 0,
                                 'pres_valid': 0, 'rec_valid': 0, 'f1_valid': 0,
                                 'pres_test': 0, 'rec_test': 0, 'f1_test': 0}}
-            es.index(index='model', id=1, body=body)
-    except:
-        es = ''
-
-    mal_data_path = '../data/malicious_domains.txt'
-    benign_data_path = '../data/benign_domains.csv'
-
-    train_set, labels_train_set, valid_set, labels_valid_set, test_set, \
-    labels_test_set = data_preprocessing(import_data, 1000,
-                                         mal_data_path, benign_data_path)
-    model = model_definition()
-    trained_model = training(es, model, 'model_name', 20, train_set, labels_train_set,
-                             valid_set, labels_valid_set)
-    model_evaluation_metrics(es, trained_model, train_set, labels_train_set,
-                             valid_set, labels_valid_set, test_set, labels_test_set)
+            es.index(index=es.get(index='model', id=1)['_source']['name'], id=1, body=body)
+            model = model_definition()
+            trained_model = training(es, model, es.get(index='model', id=1)['_source']['name'],
+                                     es.get(index='model', id=1)['_source']['epochs'],
+                                     es.get(index='model', id=1)['_source']['batch'],
+                                     train_set, labels_train_set, valid_set, labels_valid_set)
+            model_evaluation_metrics(es, trained_model, train_set, labels_train_set,
+                                     valid_set, labels_valid_set, test_set, labels_test_set)
+            es.index(index='model', id=1, body={'name': '', 'training': 0, 'load': 0,
+                                                'batch': 0, 'epochs': 0, 'samples': 0})
