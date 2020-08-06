@@ -113,18 +113,18 @@ def training(es, model, model_name, epochs, batch_size, train_set,
         try:
             body = es.get(index=es.get(index='model', id=1)['_source']['name'],
                           id=1)['_source']
-            body['training']['loss'].append(history.history['loss'][0])
-            body['training']['val_loss'].append(history.history['val_loss'][0])
-            body['training']['acc'].append(history.history['acc'][0])
-            body['training']['val_acc'].append(history.history['val_acc'][0])
+            body['training']['loss'].append(history.history['loss'][0] * 100)
+            body['training']['val_loss'].append(history.history['val_loss'][0] * 100)
+            body['training']['acc'].append(history.history['acc'][0] * 100)
+            body['training']['val_acc'].append(history.history['val_acc'][0] * 100)
             body['training']['epochs'].append((i + 1))
 
             update_body = {'doc':
                                {'training':
-                                    {'loss': body['training']['loss'] * 100,
-                                     'val_loss': body['training']['val_loss'] * 100,
-                                     'acc': body['training']['acc'] * 100,
-                                     'val_acc': body['training']['val_acc'] * 100,
+                                    {'loss': (body['training']['loss']),
+                                     'val_loss': (body['training']['val_loss']),
+                                     'acc': (body['training']['acc']),
+                                     'val_acc': (body['training']['val_acc']),
                                      'epochs': body['training']['epochs']
                                      }
                                 }
