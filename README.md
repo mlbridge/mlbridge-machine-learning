@@ -1,5 +1,11 @@
 # MLBridge - Machine Learning
 
+[![GitHub issues](https://img.shields.io/github/issues/mlbridge/mlbridge-machine-learning)](https://github.com/mlbridge/mlbridge-machine-learning/issues)
+[![GitHub license](https://img.shields.io/github/license/mlbridge/mlbridge-machine-learning)](https://github.com/mlbridge/mlbridge-machine-learning/blob/master/LICENSE)
+
+![GSoC Icon](https://developers.google.com/open-source/gsoc/resources/downloads/GSoC-logo-horizontal-200.png)
+
+
 This directory contains the the code for the training and evaluation of a binary 
 classifier for alerting whether a person is querying a malicious domain. 
 
