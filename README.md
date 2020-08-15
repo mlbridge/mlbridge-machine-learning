@@ -1,4 +1,4 @@
-# MLBridge - Machine Learning
+# ML Bridge - Machine Learning
 
 [![GitHub issues](https://img.shields.io/github/issues/mlbridge/mlbridge-machine-learning)](https://github.com/mlbridge/mlbridge-machine-learning/issues)
 [![GitHub license](https://img.shields.io/github/license/mlbridge/mlbridge-machine-learning)](https://github.com/mlbridge/mlbridge-machine-learning/blob/master/LICENSE)
@@ -33,7 +33,7 @@ Install Elasticsearch by following the instructions from this
 Elasticsearch server and then run the `training.py` app:
 ```
 cd mlbridge-machine-learning/python-code
-python3 training.py
+python training.py
 ```
 
 ## Training
