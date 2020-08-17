@@ -186,7 +186,7 @@ def training(es, model, model_name, epochs, batch_size, train_set,
 
     Returns:
         A trained binary classifier for identifying whether a domain is
-        malicious or benign.  
+        malicious or benign.
 
     """
 
@@ -225,6 +225,28 @@ def training(es, model, model_name, epochs, batch_size, train_set,
 
 def model_evaluation_metrics(es, model, train_set, labels_train_set, valid_set,
                              labels_valid_set, test_set, labels_test_set):
+    """
+
+    Function that updates the training accuracy graphs as well as loss graphs in
+    the Elasticsearch Database. The function also updates the confusion matrices
+    as well as the confusion metrics of the model, tested on the training,
+    validation as well as testing dataset, in the Elasticsearch Databse.
+
+    Args:
+        es: Contains the Elasticsearch object.
+        model: Contains the trained model.
+        train_set: Contains the training dataset.
+        labels_train_set: Contains the labels for the training dataset.
+        valid_set: Contains the data for the validation dataset.
+        labels_valid_set: Contains the labels for the validation dataset.
+        test_set: Contains the test dataset.
+        labels_test_set: Contains the labels for the test dataset.
+
+    Returns:
+        Not applicable.
+
+    """
+
     loss_train, acc_train = model.evaluate(train_set, labels_train_set)
     loss_valid, acc_valid = model.evaluate(valid_set, labels_valid_set)
     loss_test, acc_test = model.evaluate(test_set, labels_test_set)
