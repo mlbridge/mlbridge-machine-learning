@@ -7,6 +7,19 @@ import csv
 
 
 def string_to_ascii(string):
+    """
+
+    Function that converts the domain name to an integer array of ASCII values.
+
+    Args:
+        string: Contains the Domain Name entered by the user.
+
+    Returns:
+        A numpy array of ASCII values corresponding to the characters of the
+        Domain Name
+
+    """
+
     ascii_arr = np.zeros(len(string))
     for i in range(len(string)):
         ascii_arr[i] = ord(string[i])
@@ -15,6 +28,22 @@ def string_to_ascii(string):
 
 def import_data(string_to_ascii, data_path, labels, header, lateral_skip,
                 no_of_entries, csv_txt):
+    """
+
+    Function that imports data from both CSV files as well as TXT files.
+
+    Args:
+        string_to_ascii:
+        data_path:
+        labels:
+        header:
+        lateral_skip:
+        no_of_entries:
+        csv_txt:
+
+    Returns:
+
+    """
     if csv_txt == 0:
         data = open(data_path, "r")
         data = list(data.readlines())
@@ -87,6 +116,14 @@ def data_preprocessing(import_data, number_of_samples,
 
 
 def model_definition():
+    """
+
+    Function that returns a Convolutional Neural Network 
+
+    Returns:
+
+    """
+
     model = models.Sequential(name='DNS_Alert_Net')
     model.add(layers.Conv2D(16, (2, 2), activation='relu',
                             input_shape=(16, 16, 1)))
