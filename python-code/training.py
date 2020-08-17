@@ -89,6 +89,7 @@ def data_preprocessing(import_data, number_of_samples,
         as the labels of the test dataset.
 
     """
+
     ret_data_mal, labels_mal = \
         import_data(string_to_ascii, mal_data_address, 1, 1, 0,
                     int(number_of_samples / 2), 0)
@@ -141,9 +142,12 @@ def data_preprocessing(import_data, number_of_samples,
 def model_definition():
     """
 
-    Function that returns a Convolutional Neural Network
+    Function that returns a Convolutional Neural Network that classifies whether
+    the domain name is malicious or benign.
 
     Returns:
+        A Convolutional Neural Network that is a binary classifier that
+        classifies whether a domain name is malicious or benign.
 
     """
 
@@ -165,6 +169,27 @@ def model_definition():
 
 def training(es, model, model_name, epochs, batch_size, train_set,
              labels_train_set, validation_set, labels_validation_set):
+    """
+
+    Function that return the trained Convolutional Neural Network.
+
+    Args:
+        es: Contains the Elasticsearch object.
+        model: Contains the model as defined by the model_definition function.
+        model_name: Contains the model name.
+        epochs: Contains the number of epochs the model has to be trained for.
+        batch_size: Contains the batch size the model would use while training.
+        train_set: Contains the training dataset.
+        labels_train_set: Contains the labels for the training dataset.
+        validation_set: Contains the data for the validation dataset.
+        labels_validation_set: Contains the labels for the validation dataset.
+
+    Returns:
+        A trained binary classifier for identifying whether a domain is
+        malicious or benign.  
+
+    """
+
     for i in range(epochs):
         history = model.fit(train_set, labels_train_set, batch_size=batch_size,
                             epochs=1, validation_data=(validation_set,
