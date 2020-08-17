@@ -71,6 +71,24 @@ def import_data(string_to_ascii, data_path, labels, header, lateral_skip,
 
 def data_preprocessing(import_data, number_of_samples,
                        mal_data_address, benign_data_address):
+    """
+
+    Function that returns the training dataset, the validation dataset as well
+    as the test dataset for model training and evaluation.
+
+    Args:
+        import_data: Contains the import_data function.
+        number_of_samples: Contains the number of data points that have to be
+                           sampled for training.
+        mal_data_address: Contains the data path of malicious domains.
+        benign_data_address: Contains the data path of benign domains.
+
+    Returns:
+        The training dataset, the labels of the training dataset, the validation
+        dataset, the labels of the validation dataset, the test dataset as well
+        as the labels of the test dataset.
+
+    """
     ret_data_mal, labels_mal = \
         import_data(string_to_ascii, mal_data_address, 1, 1, 0,
                     int(number_of_samples / 2), 0)
