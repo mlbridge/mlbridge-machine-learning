@@ -33,17 +33,22 @@ def import_data(string_to_ascii, data_path, labels, header, lateral_skip,
     Function that imports data from both CSV files as well as TXT files.
 
     Args:
-        string_to_ascii:
-        data_path:
-        labels:
-        header:
-        lateral_skip:
-        no_of_entries:
-        csv_txt:
+        string_to_ascii: Contains the string_to_ascii function.
+        data_path: Contains the path of the data to import.
+        labels: Contains the labels of the data that has to be imported.
+        header: Contains the number of lines to skip from the top.
+        lateral_skip: Contains the number of spaces to skip from the left.
+        no_of_entries: Contains the number of data entries that have to be
+                       imported.
+        csv_txt: Contains whether the data to be imported is of a CSV file or a
+                 TXT file.
 
     Returns:
+        The data that has to be imported as well as the labels corresponding to
+        the data.
 
     """
+
     if csv_txt == 0:
         data = open(data_path, "r")
         data = list(data.readlines())
@@ -118,7 +123,7 @@ def data_preprocessing(import_data, number_of_samples,
 def model_definition():
     """
 
-    Function that returns a Convolutional Neural Network 
+    Function that returns a Convolutional Neural Network
 
     Returns:
 
